@@ -1,3 +1,4 @@
+//u23530996 Kiara Hodgson
 import React from 'react';
 import Profile from '../components/Profile';
 import EditProfile from '../components/EditProfile';

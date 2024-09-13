@@ -1,14 +1,14 @@
-const express = require('express');
-const path = require('path');
-const app = express();
-const port = 3000;
+import express from "express";
+import path from "path";
 
-app.use(express.static(path.join(__dirname, '../frontend/public')));
+const app = express();
+
+app.use(express.static("frontend/public"));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/public/index.html'));
+  res.sendFile(path.resolve("frontend/public", "index.html"));
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
