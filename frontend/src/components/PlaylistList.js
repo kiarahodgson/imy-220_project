@@ -1,17 +1,19 @@
-//u23530996 Kiara Hodgson
-
 import React from 'react';
 
-const Playlist = ({ playlist }) => {
-  if (!playlist) return <p>Playlist data empty</p>;
-
+const PlaylistList = ({ playlists = [] }) => {
   return (
-    <div className="playlist">
-      <h2>{playlist.name}</h2>
-      <p>{playlist.description}</p> {}
-      <p>Number of songs: {playlist.songCount}</p>
+    <div className="playlist-list">
+      {playlists.length === 0 ? (
+        <p>No playlists found.</p>
+      ) : (
+        playlists.map((playlist) => (
+          <div key={playlist._id} className="playlist-item">
+            <h3>{playlist.title}</h3>
+          </div>
+        ))
+      )}
     </div>
   );
 };
 
-export default Playlist;
+export default PlaylistList;

@@ -1,16 +1,11 @@
-//u23530996 Kiara Hodgson
-
 import React from 'react';
 
-const Playlist = ({ playlist }) => {
-  if (!playlist) return <p>No playlist data, add a playlist and review them here</p>;
-
-  return (
-    <div className="playlist">
-      <h2>{playlist.name}</h2>
-      <p>Number of songs: {playlist.songCount}</p>
-    </div>
-  );
-};
+const Playlist = ({ playlist }) => (
+  <div className="p-4 border rounded-md shadow-md">
+    <h2 className="text-2xl font-bold mb-2">{playlist.name}</h2>
+    <p className="text-gray-700">{playlist.description}</p>
+    <p className="mt-4 font-semibold">{playlist.songCount} songs</p>
+  </div>
+);
 
 export default Playlist;

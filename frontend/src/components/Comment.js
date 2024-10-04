@@ -1,11 +1,9 @@
-//u23530996 Kiara Hodgson
-
 import React from 'react';
 
 const Comment = ({ comment }) => (
-  <div className="comments">
+  <div className="border border-gray-200 p-4 rounded-md shadow-sm">
     <p>
-      <b>{comment.user}</b>: {comment.text}
+      <b className="text-gray-700">{comment.user}</b>: {comment.text}
     </p>
   </div>
 );

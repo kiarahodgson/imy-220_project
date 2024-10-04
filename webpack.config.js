@@ -17,10 +17,10 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
-        test: /\.(png|jpg|jpeg|gif|svg)$/i,
+        test: /\.(png|jpg|jpeg|gif|svg|webp)$/i,
         type: 'asset/resource',
       },
     ],
@@ -32,7 +32,7 @@ module.exports = {
     static: {
       directory: path.resolve(__dirname, 'frontend', 'public'),
     },
-    historyApiFallback: true, 
+    historyApiFallback: true,
     port: 3000,
     hot: true,
     open: true,

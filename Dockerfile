@@ -1,14 +1,29 @@
-#u23530996 Kiara Hodgson
-FROM node:20
+# Use an official Node.js runtime as the base image
+FROM node:18 as build
 
-WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /usr/src/app
 
-COPY . . 
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
-ENV PORT=3000 
+# Copy the rest of the project files
+COPY . .
 
-CMD ["npm", "start"]
+# Build the app
+RUN npm run build
 
-EXPOSE 3000
+# Stage 2: Serve the app using a lightweight web server
+FROM nginx:alpine
+
+# Copy the build output to Nginx's html folder
+COPY --from=build /usr/src/app/frontend/public /usr/share/nginx/html
+
+# Expose port 80 for the web server
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,16 +1,19 @@
-//u23530996 Kiara Hodgson
-
 import React from 'react';
 
-const Profile = ({ user }) => {
-  if (!user) return <p>User Data Empty</p>;
-
-  return (
-    <div className="profile-class">
-      <h2>{user.name}</h2>
-      <p>{user.bio}</p>
+const Profile = ({ user }) => (
+  <div className="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
+    <div className="flex items-center space-x-4">
+      <img
+        src={user.avatar}
+        alt="avatar"
+        className="w-16 h-16 rounded-full border border-gray-300"
+      />
+      <div>
+        <h3 className="text-xl font-semibold text-gray-900">{user.name}</h3>
+        <p className="text-gray-600">{user.bio}</p>
+      </div>
     </div>
-  );
-};
+  </div>
+);
 
 export default Profile;

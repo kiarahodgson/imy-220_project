@@ -1,13 +1,11 @@
-//u23530996 Kiara Hodgson
-
 import React from 'react';
-import ProfilePreview from './ProfilePreview';
 
 const FollowingList = ({ following }) => (
-  <div>
-    <h2>Following</h2>
-    {following.map(user => (
-      <ProfilePreview key={user.id} profile={user} />
+  <div className="space-y-4">
+    {following.map((person) => (
+      <div key={person.id} className="p-4 border rounded-md shadow-md">
+        <p className="font-semibold text-gray-700">{person.name}</p>
+      </div>
     ))}
   </div>
 );

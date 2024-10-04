@@ -1,53 +1,65 @@
-//u23530996 Kiara Hodgson
-
 import React, { useState } from 'react';
+import axios from 'axios';
 
-// handles validation for login form
-const LoginForm = () => {
+const LoginForm = ({ onLogin }) => {
   const [email, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
+  const [successMessage, setSuccessMessage] = useState('');
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
-  
-  const handleSubmit = (event) => {
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const newErrors = { email: '', password: '' };
     if (!validateEmail(email)) {
-      newErrors.email = 'Please input a valid email address';
+      newErrors.email = 'Please use a proper email address';
     }
     if (password.trim() === '') {
-      newErrors.password = 'Password must not be empty';
+      newErrors.password = 'Password can not be void';
     }
     setErrors(newErrors);
-    if (Object.values(newErrors).every(error => error === '')) {
-      console.log('Form submitted using:', { email, password });
+    if (Object.values(newErrors).every((error) => error === '')) {
+      try {
+        const response = await axios.post('http://localhost:8000/api/users/login', { email, password });
+        const userData = response.data.user;
+        onLogin(userData);
+        setSuccessMessage('Logged in successfully!');
+      } catch (error) {
+        console.error('Error during login:', error.response.data.message);
+        setErrors({ ...newErrors, email: error.response.data.message });
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="space-y-4 p-4" onSubmit={handleSubmit}>
       <div>
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email:</label>
         <input
           type="email"
           id="email"
+          className="w-full border border-gray-300 rounded-lg p-2"
           value={email}
           onChange={(e) => setEmailAddress(e.target.value)}
         />
-        {errors.email && <p className="error-class">{errors.email}</p>}
+        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
       </div>
       <div>
-        <label htmlFor="password">Password:</label>
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password:</label>
         <input
           type="password"
           id="password"
+          className="w-full border border-gray-300 rounded-lg p-2"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {errors.password && <p className="error-class">{errors.password}</p>}
+        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
       </div>
-      <button type="submit">Login</button>
+      {successMessage && <p className="text-[#6E70C1] text-xs mt-1">{successMessage}</p>}
+      <button className="bg-[#AE869A] text-white px-4 py-2 rounded hover:bg-[#6E70C1]" type="submit">
+        Login
+      </button>
     </form>
   );
 };

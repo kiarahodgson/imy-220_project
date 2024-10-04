@@ -1,10 +1,8 @@
-//u23530996 Kiara Hodgson
-
 import React from 'react';
 import Comment from './Comment';
 
 const CommentList = ({ comments }) => (
-  <div className="comments-list">
+  <div className="space-y-4">
     {comments.map((comment) => (
       <Comment key={comment.id} comment={comment} />
     ))}
