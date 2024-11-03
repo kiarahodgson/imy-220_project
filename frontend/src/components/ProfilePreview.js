@@ -7,11 +7,11 @@ const ProfilePreview = ({ profile }) => (
     <div className="profile-preview-content">
       <img
         src={profile.profileImage || defaultProfilePic}
-        alt={`${profile.name}'s avatar`}
+        alt={`${profile.username}'s avatar`}  // Updated for username
         className="profile-preview-image"
       />
       <div className="profile-preview-info">
-        <h4 className="profile-preview-name">{profile.name}</h4>
+        <h4 className="profile-preview-name">{profile.username}</h4>  {/* Updated for username */}
       </div>
     </div>
   </Link>

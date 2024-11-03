@@ -4,6 +4,7 @@ import AddToPlaylist from './AddToPlaylist';
 
 const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, showAddToPlaylistButton }) => {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(song.deleted);
 
   const handleDeleteClick = () => {
     setShowConfirm(true);
@@ -11,6 +12,9 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
 
   const confirmDelete = async () => {
     try {
+      // Mark the song as deleted visually
+      setIsDeleted(true);
+
       const response = await fetch(`http://localhost:8000/api/songs/${song._id}/delete`, {
         method: 'PUT',
         headers: {
@@ -22,6 +26,7 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
         throw new Error('Failed to mark song as deleted');
       }
 
+      // Call the onDelete function to remove the song from parent component
       onDelete(song._id);
     } catch (error) {
       console.error('Error deleting song:', error);
@@ -31,7 +36,7 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
   };
 
   const renderSpotifyEmbed = (url) => {
-    if (typeof url !== 'string' || !url.includes('/track/') || song.deleted) {
+    if (typeof url !== 'string' || !url.includes('/track/') || isDeleted) {
       return <p className="text-gray-500">Spotify embed unavailable</p>;
     }
 
@@ -51,12 +56,22 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
 
   return (
     <div className="song-wrapper">
-      <div className={`song-container relative bg-white rounded-lg shadow-lg-purple p-4 ${song.deleted ? 'opacity-50' : ''}`}>
+      <div className={`song-container relative bg-white rounded-lg shadow-lg-purple p-4 ${isDeleted ? 'opacity-50' : ''}`}>
         
-        {showRemoveButton && onRemove && (
+        {/* Delete Button in the Top-Right Corner */}
+        {!isDeleted && onDelete && (
+          <button
+            onClick={handleDeleteClick}
+            className="absolute top-2 right-2 text-red-500 text-sm underline hover:text-red-700"
+          >
+            Delete
+          </button>
+        )}
+
+        {showRemoveButton && onRemove && !isDeleted && (
           <button
             onClick={onRemove}
-            className="absolute top-2 right-2 text-red-500 text-sm underline hover:text-red-700"
+            className="absolute top-10 right-2 text-red-500 text-sm underline hover:text-red-700"
           >
             Remove from Playlist
           </button>
@@ -66,13 +81,13 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
         <p className="text-gray-600">Artist: {song.artist || 'Unknown Artist'}</p>
         <p className="text-gray-600">Added on: {song.dateAdded ? new Date(song.dateAdded).toLocaleDateString() : 'Unknown Date'}</p>
 
-        {song.deleted ? (
+        {isDeleted ? (
           <p className="text-red-500 italic">This song has been deleted.</p>
         ) : (
           song.link && renderSpotifyEmbed(song.link)
         )}
 
-        {showAddToPlaylistButton && !song.deleted && (
+        {showAddToPlaylistButton && playlists && playlists.length > 0 && !isDeleted && (
           <AddToPlaylist songId={song._id} userId={userId} playlists={playlists} />
         )}
 

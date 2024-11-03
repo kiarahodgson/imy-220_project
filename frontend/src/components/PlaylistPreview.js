@@ -1,3 +1,4 @@
+// PlaylistPreview.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import playlistDefault from '../assets/images/playlist_default.webp';
@@ -14,6 +15,7 @@ const PlaylistPreview = ({ playlist, showCreatorMessage = true }) => {
       <img
         src={playlist.coverImage || playlistDefault}
         alt="Cover"
+        loading="lazy" // Enable lazy loading for the image
         className="playlist-image rounded-md mb-4 w-full h-40 object-cover"
       />
       {showCreatorMessage ? (
@@ -25,7 +27,6 @@ const PlaylistPreview = ({ playlist, showCreatorMessage = true }) => {
       )}
       <p className="playlist-description text-gray-600 mt-2">{playlist.description}</p>
 
-      {/* Display the song count using `songCount` */}
       <p className="playlist-song-count text-gray-500 mt-2">
         {playlist.songCount} {playlist.songCount === 1 ? 'song' : 'songs'}
       </p>

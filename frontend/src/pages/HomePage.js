@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 const HomePage = () => {
   const [songs, setSongs] = useState([]);
   const [filteredSongs, setFilteredSongs] = useState([]);
-  const [playlists, setPlaylists] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [searchResults, setSearchResults] = useState({ users: [], songs: [], playlists: [] });
   const [loading, setLoading] = useState(true);
@@ -19,6 +19,7 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState('songs');
   const [isSearching, setIsSearching] = useState(false);
 
+  // Retrieve the logged-in user info
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -27,65 +28,71 @@ const HomePage = () => {
     }
   }, []);
 
+  // Fetch the unified activity feed (user + friends) in reverse chronological order
   useEffect(() => {
-    if (activeTab === 'songs' && !isSearching) {
-      const fetchSongs = async () => {
-        setLoading(true);
-        try {
-          const response = await fetch('http://localhost:8000/api/songs');
-          if (!response.ok) throw new Error('Failed to fetch songs');
-          const data = await response.json();
-          setSongs(data);
-          setFilteredSongs(data);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchSongs();
-    }
-  }, [activeTab, isSearching]);
+    const fetchActivityFeed = async () => {
+      if (!user) return;
 
-  useEffect(() => {
-    if (user && !isSearching) {
-      const fetchUserPlaylists = async () => {
-        setLoading(true);
-        try {
-          const response = await fetch(`http://localhost:8000/api/playlists/user/${user.userId}`);
-          if (!response.ok) throw new Error('Failed to fetch user playlists');
-          const data = await response.json();
-          setUserPlaylists(data);
-          setPlaylists(data);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchUserPlaylists();
-    }
-  }, [user, isSearching]);
-
-  useEffect(() => {
-    const fetchFriendPlaylists = async () => {
-      if (!user || !user.friends) return;
-
+      setLoading(true);  // Start loading
       try {
-        const friendPlaylists = await Promise.all(
-          user.friends.map(async (friendId) => {
-            const response = await fetch(`http://localhost:8000/api/playlists/user/${friendId}`);
-            return response.ok ? response.json() : [];
-          })
-        );
-        setPlaylists(friendPlaylists.flat());
+        const response = await fetch(`http://localhost:8000/api/playlists/activity-feed/${user.userId}`);
+        if (!response.ok) throw new Error('Failed to fetch activity feed');
+        const data = await response.json();
+        setActivityFeed(data);
       } catch (error) {
-        console.error('Error fetching friend playlists:', error);
+        console.error('Error fetching activity feed:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);  // Stop loading
       }
     };
 
-    fetchFriendPlaylists();
+    if (activeTab === 'playlists' && !isSearching) {
+      fetchActivityFeed();
+    }
+  }, [user, activeTab, isSearching]);
+
+  // Fetch only the logged-in user's playlists for "Add to Playlist" functionality
+  useEffect(() => {
+    const fetchUserPlaylists = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/playlists/user/${user.userId}`);
+        if (!response.ok) throw new Error('Failed to fetch user playlists');
+        const data = await response.json();
+        setUserPlaylists(data);
+      } catch (error) {
+        console.error('Error fetching user playlists:', error);
+        setError(error.message);
+      }
+    };
+
+    fetchUserPlaylists();
   }, [user]);
+
+  // Fetch all songs when the "songs" tab is active
+  useEffect(() => {
+    const fetchSongs = async () => {
+      setLoading(true);  // Start loading
+      try {
+        const response = await fetch('http://localhost:8000/api/songs');
+        if (!response.ok) throw new Error('Failed to fetch songs');
+        const data = await response.json();
+        setSongs(data);
+        setFilteredSongs(data);
+      } catch (error) {
+        console.error('Error fetching songs:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);  // Stop loading
+      }
+    };
+
+    if (activeTab === 'songs' && !isSearching) {
+      fetchSongs();
+    }
+  }, [activeTab, isSearching]);
 
   const onDeleteSong = (songId) => {
     setSongs((prevSongs) =>
@@ -109,7 +116,7 @@ const HomePage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...newSong, addedBy: user.userId }),
+        body: JSON.stringify({ ...newSong, addedBy: user?.userId }),
       });
 
       if (!response.ok) throw new Error('Failed to add');
@@ -134,7 +141,7 @@ const HomePage = () => {
       category: newPlaylist.category,
       hashtags: newPlaylist.hashtags,
       coverImage: newPlaylist.coverImage,
-      userId: user.userId,
+      userId: user?.userId,
     };
 
     try {
@@ -154,7 +161,7 @@ const HomePage = () => {
 
       const savedPlaylist = await response.json();
       setUserPlaylists((prevPlaylists) => [savedPlaylist, ...prevPlaylists]);
-      setPlaylists((prevPlaylists) => [savedPlaylist, ...prevPlaylists]);
+      setActivityFeed((prevFeed) => [savedPlaylist, ...prevFeed]);
     } catch (error) {
       setError(error.message);
     }
@@ -173,25 +180,22 @@ const HomePage = () => {
       if (!response.ok) throw new Error('could not fetch search results');
       const results = await response.json();
       setSearchResults(results);
-
-      setFilteredSongs(songs.filter(song => results.songs.some(result => result._id === song._id)));
+      setFilteredSongs(results.songs);
     } catch (error) {
       console.error('Error fetching search results:', error);
       setError('could not fetch search results');
     }
   };
 
-  if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="home-page p-6 md:p-8 lg:p-10">
       <header className="home-head mb-6 max-w-page mx-auto">
-        <h1 className="mb-4 text-3xl font-semibold text-gray-800">Search for Users, Playlists, and songs</h1>
+        <h1 className="mb-4 text-3xl font-semibold text-gray-800">Search for Users, Playlists, and Songs</h1>
       </header>
 
       <main className="home-main max-w-page mx-auto">
-        {/* Search area */}
         <section className="search-section mb-6">
           <div className="shadow-lg-purple rounded-lg p-6 bg-white">
             <SearchInput onSearch={handleSearch} />
@@ -218,9 +222,10 @@ const HomePage = () => {
                   songs={filteredSongs}
                   playlists={[]}
                   userPlaylists={userPlaylists}
-                  userId={user.userId}
+                  userId={user?.userId}
                   onDeleteSong={onDeleteSong}
                   activeTab="songs"
+                  loading={loading} // Pass loading state to Feed
                 />
               </section>
             )}
@@ -265,11 +270,12 @@ const HomePage = () => {
             <section className="mt-6 shadow-lg-purple rounded-lg p-6 bg-white">
               <Feed
                 songs={filteredSongs}
-                playlists={activeTab === 'playlists' ? playlists : []}
+                playlists={activeTab === 'playlists' ? activityFeed : []}
                 userPlaylists={userPlaylists}
-                userId={user.userId}
+                userId={user?.userId}
                 onDeleteSong={onDeleteSong}
                 activeTab={activeTab}
+                loading={loading} // Pass loading state to Feed
               />
             </section>
           </>

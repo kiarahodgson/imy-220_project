@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Playlist = require('../models/Playlist');
+const User = require('../models/User');
 
 router.post('/', async (req, res) => {
   try {
@@ -144,6 +145,41 @@ router.get('/user/:userId', async (req, res) => {
     res.status(200).send(playlists);
   } catch (error) {
     res.status(500).send({ message: 'Error fetching user playlists', error });
+  }
+});
+
+// Fetch activity feed for user and friends
+router.get('/activity-feed/:userId', async (req, res) => {
+  const { userId } = req.params;
+  console.log(`Received request for activity feed of user: ${userId}`);
+
+  try {
+    // Find the user and populate the friends field with just the _id field
+    const user = await User.findById(userId).populate('friends', '_id');
+    if (!user) {
+      console.error(`User not found for ID: ${userId}`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log(`User found. User ID: ${userId}, Friends:`, user.friends);
+
+    // Collect relevant user IDs (user and friends)
+    const relevantUserIds = [user._id, ...user.friends.map(friend => friend._id)];
+    console.log(`Relevant user IDs for activity feed:`, relevantUserIds);
+
+    // Fetch playlists by relevant user IDs in reverse chronological order
+    const activityFeed = await Playlist.find({
+      userId: { $in: relevantUserIds }
+    })
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .populate('userId', 'username profileImage') // Populate user info in each playlist
+      .exec();
+
+    console.log(`Fetched ${activityFeed.length} playlists for activity feed.`);
+    res.status(200).json(activityFeed);
+  } catch (error) {
+    console.error('Error fetching activity feed:', error.message || error);
+    res.status(500).json({ message: 'Error fetching activity feed', error: error.message || error });
   }
 });
 
