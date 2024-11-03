@@ -4,7 +4,7 @@ const Profile = ({ user }) => (
   <div className="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
     <div className="flex items-center space-x-4">
       <img
-        src={user.avatar}
+        src={user.avatar || '../assets/images/profile_default.webp'}
         alt="avatar"
         className="w-16 h-16 rounded-full border border-gray-300"
       />

@@ -1,21 +1,20 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true, // Optional: if you want usernames to be unique
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
+    name: { type: String },
+    username: { type: String, required: true, unique: true },
+    pronouns: { type: String },
+    bio: { type: String },
+    socialLinks: [
+        {
+            label: { type: String },
+            url: { type: String },
+        },
+    ],
+    profileImage: { type: String },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
 });
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

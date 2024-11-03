@@ -1,93 +1,256 @@
 import React, { useEffect, useState } from 'react';
 import CommentList from '../components/CommentList';
 import AddComment from '../components/AddComment';
-import CreatePlaylist from '../components/CreatePlaylist';
+import Song from '../components/Song';
+import { useNavigate } from 'react-router-dom';
 
-const PlaylistPage = ({ comments = [], user }) => {
-  const [allPlaylists, setAllPlaylists] = useState([]);
+const PlaylistPage = ({ playlistId, user }) => {
+  const [playlist, setPlaylist] = useState(null);
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPlaylists = async () => {
+    const fetchPlaylist = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/playlists/user/${user._id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch playlists');
-        }
-        const userPlaylists = await response.json();
-        setAllPlaylists(userPlaylists);
+        const response = await fetch(`http://localhost:8000/api/playlists/${playlistId}`);
+        if (!response.ok) throw new Error('Failed to fetch playlist');
+    
+        const playlistData = await response.json();
+        setPlaylist(playlistData);
+        setTitle(playlistData.title);
+        setDescription(playlistData.description);
+
+        const songIds = playlistData.songIds.map(song => typeof song === 'object' ? song._id : song);
+        const songDetails = await Promise.all(
+          songIds.map(async (id) => {
+            const songResponse = await fetch(`http://localhost:8000/api/songs/${id}`);
+            if (songResponse.ok) {
+              return songResponse.json();
+            } else {
+              console.warn(`Song with ID ${id} not found, marking as deleted.`);
+              return { _id: id, title: 'Unknown', artist: 'Unknown', deleted: true };
+            }
+          })
+        );
+
+        setSongs(songDetails);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+  
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/comments/${playlistId}`);
+        if (!response.ok) throw new Error('Failed to fetch comments');
+        
+        const commentsData = await response.json();
+        setComments(commentsData);
       } catch (error) {
         console.error(error);
       }
     };
-
-    if (user && user._id) {
-      fetchPlaylists();
+  
+    if (playlistId) {
+      fetchPlaylist();
+      fetchComments();
     }
-  }, [user]);
+  }, [playlistId]);
 
-  const handleCreatePlaylist = async (newPlaylist) => {
-    if (!user) {
-      console.error("User is not logged in");
-      return;
-    }
-
-    const userId = user._id;
-
+  const handleDeletePlaylist = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/playlists', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...newPlaylist, userId }),
+      const response = await fetch(`http://localhost:8000/api/playlists/${playlistId}`, {
+        method: 'DELETE',
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create playlist');
-      }
-
-      const createdPlaylist = await response.json();
-      setAllPlaylists([...allPlaylists, createdPlaylist]);
+      if (!response.ok) throw new Error('Failed to delete playlist');
+      
+      navigate('/');
     } catch (error) {
       console.error(error);
     }
   };
 
+  const handleDeleteSong = async (songId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/songs/${songId}/delete`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+  
+      if (!response.ok) throw new Error('Failed to mark song as deleted');
+  
+      const updatedSong = await response.json();
+      setSongs((prevSongs) => prevSongs.map(song => song._id === songId ? updatedSong : song));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEditToggle = () => setIsEditing(!isEditing);
+
+  const handleSaveChanges = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/playlists/${playlistId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description })
+      });
+
+      if (!response.ok) throw new Error('Failed to update playlist');
+      
+      const updatedPlaylist = await response.json();
+      setPlaylist(updatedPlaylist);
+      setIsEditing(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRemoveSongFromPlaylist = async (songId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/playlists/${playlistId}/remove-song`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songId })
+      });
+  
+      if (!response.ok) throw new Error('Failed to remove song from playlist');
+  
+      const updatedPlaylist = await response.json();
+      setPlaylist(updatedPlaylist);
+      setSongs((prevSongs) => prevSongs.filter(song => song._id !== songId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/comments/${playlistId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: newComment,
+          userId: user._id,
+          username: user.username,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to add comment');
+
+      const addedComment = await response.json();
+      setComments([addedComment, ...comments]);
+      setNewComment('');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (!playlist) return <p>Playlist not found.</p>;
+
+  // Checks if user created playlist
+  const isOwner = user && (playlist.userId === user._id || playlist.userId?._id === user._id);
+
   return (
-    <div className="playlist-page">
-      <header className="playlist-header">
-        <h1>{user ? `${user.username}'s Playlists` : 'Playlists'}</h1>
-      </header>
-      <main className="playlist-main">
-        <section className="create-playlist">
-          <CreatePlaylist onCreate={handleCreatePlaylist} />
-        </section>
-        <section className="playlist-details grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {allPlaylists.length > 0 ? (
-            allPlaylists.map((playlist) => (
-              <div
-                key={playlist._id}
-                className="playlist-item bg-white p-4 rounded-lg shadow-md border border-gray-300 hover:shadow-lg transition-shadow duration-200"
-              >
-                <h2 className="text-xl font-bold mb-2 text-purple-600">{playlist.title}</h2>
-                <p className="text-gray-700 mb-4">{playlist.description}</p>
-                <p className="text-gray-500">Number of Songs: {playlist.songCount}</p>
+    <div className="playlist-page p-4 mx-auto max-w-screen-md">
+      <header className="playlist-header text-center">
+        {playlist.coverImage && (
+          <div className="cover-image-wrapper mb-4">
+            <img
+              src={playlist.coverImage}
+              alt="Playlist Cover"
+              className="cover-image w-full h-64 object-cover rounded-md shadow-lg"
+            />
+          </div>
+        )}
+        {isEditing ? (
+          <div className="edit-form">
+            <input
+              className="text-lg font-semibold mb-2 text-purple-600 w-full"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <textarea
+              className="text-gray-700 mb-4 w-full"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <button onClick={handleSaveChanges} className="bg-blue-500 text-white py-1 px-3 rounded">
+              Save Changes
+            </button>
+            <button onClick={handleEditToggle} className="bg-gray-500 text-white py-1 px-3 rounded ml-2">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-3xl font-semibold">{playlist.title}</h1>
+            <p className="text-gray-700 mb-4">{playlist.description}</p>
+            {isOwner && (
+              <div className="action-buttons mt-2 space-x-4">
+                <button onClick={handleEditToggle} className="bg-green-500 text-white py-1 px-4 rounded">
+                  Edit
+                </button>
+                <button onClick={handleDeletePlaylist} className="bg-red-500 text-white py-1 px-4 rounded">
+                  Delete
+                </button>
               </div>
-            ))
-          ) : (
-            <p>No playlists available.</p>
-          )}
-        </section>
-        <section className="comments-section mt-8">
-          <h2>Comments</h2>
-          {comments.length > 0 ? (
-            <CommentList comments={comments} />
-          ) : (
-            <p>Nothing here yet.</p>
-          )}
-          <AddComment />
-        </section>
-      </main>
+            )}
+          </>
+        )}
+      </header>
+
+      {/* Song area */}
+      <section className="song-list mt-6">
+        <h2 className="text-2xl font-semibold mb-4">Songs</h2>
+        {songs.length > 0 ? (
+          songs.map((song) => (
+            <Song
+              key={song._id}
+              song={song}
+              userId={user._id}
+              playlists={[]}
+              onDelete={isOwner ? handleDeleteSong : null}
+              onRemove={isOwner ? () => handleRemoveSongFromPlaylist(song._id) : null}
+              showRemoveButton={isOwner}
+              showAddToPlaylistButton={false}
+            />
+          ))
+        ) : (
+          <p>No songs available in this playlist.</p>
+        )}
+      </section>
+
+      {/* playlist comments */}
+      <section className="comments-section mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Comments</h2>
+        <CommentList comments={comments} user={user} />
+        
+        {user && (
+          <div className="add-comment mt-4">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="w-full border border-gray-300 p-2 rounded-md"
+            />
+            <button onClick={handleAddComment} className="bg-blue-500 text-white py-1 px-3 rounded mt-2">
+              Post Comment
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   );
 };

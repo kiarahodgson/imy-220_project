@@ -1,17 +1,20 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import defaultProfilePic from '../assets/images/profile_default.webp';
 
 const ProfilePreview = ({ profile }) => (
-  <div className="p-4 border rounded-md shadow-md flex items-center space-x-4">
-    <img
-      src={profile.avatar}
-      alt={profile.name}
-      className="w-12 h-12 rounded-full border border-gray-300"
-    />
-    <div>
-      <h4 className="text-lg font-semibold">{profile.name}</h4>
-      <p className="text-gray-600">{profile.bio}</p>
+  <Link to={`/profile/${profile._id}`} className="profile-preview">
+    <div className="profile-preview-content">
+      <img
+        src={profile.profileImage || defaultProfilePic}
+        alt={`${profile.name}'s avatar`}
+        className="profile-preview-image"
+      />
+      <div className="profile-preview-info">
+        <h4 className="profile-preview-name">{profile.name}</h4>
+      </div>
     </div>
-  </div>
+  </Link>
 );
 
 export default ProfilePreview;

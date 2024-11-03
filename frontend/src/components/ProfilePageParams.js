@@ -1,24 +1,34 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import ProfilePage from './ProfilePage';
-import { getProfileById, dummyPlaylists } from './dumdat';
-
-const ProfilePageParams = () => {
+const ProfilePageParams = ({ loggedInUserId }) => {
   const { id } = useParams();
-  const profile = getProfileById(id);
+  const isViewingOwnProfile = loggedInUserId === id;
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!profile) {
-    return <p className="text-red-500">Profile not found</p>;
-  }
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/users/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch user profile');
+        const data = await response.json();
+        setProfileData(data);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [id]);
+
+  if (loading) return <p>Loading profile...</p>;
+  if (!profileData) return <p>Profile not found</p>;
 
   return (
     <ProfilePage
-      user={profile}
-      playlists={dummyPlaylists}
-      followers={profile.followers}
-      following={profile.following}
+      userId={id}               
+      loggedInUserId={loggedInUserId} 
+      user={profileData}       
+      isViewingOwnProfile={isViewingOwnProfile}
     />
   );
 };
-
-export default ProfilePageParams;

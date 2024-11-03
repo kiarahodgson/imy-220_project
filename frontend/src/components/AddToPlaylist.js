@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AddToPlaylist = ({ songId, userId, playlists }) => {
   const [selectedPlaylist, setSelectedPlaylist] = useState('');
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
+  useEffect(() => {
+    console.log('Current userId:', userId);
+    console.log('Playlists:', playlists);
+  }, [userId, playlists]);
+
+  const userPlaylists = playlists.filter(
+    (playlist) => playlist.userId === userId || playlist.userId?._id === userId
+  );
+
   const handleAddSong = async () => {
+    if (!selectedPlaylist) return;
 
     try {
-      if (selectedPlaylist) {
-        const response = await axios.put(`http://localhost:8000/api/playlists/${selectedPlaylist}/add-song`, { songId });
-        alert('Song added to playlist!');
-
-        // Automatically closes dropdown after song has been added to playlist
-        setDropdownOpen(false);
-        setSelectedPlaylist('');
-      }
+      await axios.put(`http://localhost:8000/api/playlists/${selectedPlaylist}/add-song`, { songId });
+      alert('Song added to playlist!');
+      setDropdownOpen(false);
+      setSelectedPlaylist('');
     } catch (error) {
       console.error('Error could not add song to playlist:', error);
     }
@@ -24,36 +30,38 @@ const AddToPlaylist = ({ songId, userId, playlists }) => {
   return (
     <div className="relative">
       <button
-        className="bg-[#AE869A] hover:bg-[#7F5EDA] text-white font-bold py-2 px-4 rounded"
+        className="off-white-button"
         onClick={() => setDropdownOpen(!isDropdownOpen)}
       >
         Add to Playlist
       </button>
 
-      {isDropdownOpen && playlists.length > 0 && (
-        <div className="absolute mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+      {isDropdownOpen && userPlaylists.length > 0 && (
+        <div className="dropdown-container absolute mt-2 w-full z-10">
           <select
             className="block w-full p-2 border border-gray-300 rounded-lg"
             value={selectedPlaylist}
-            onChange={(e) => {
-              setSelectedPlaylist(e.target.value);
-            }}
+            onChange={(e) => setSelectedPlaylist(e.target.value)}
           >
             <option value="">Choose a Playlist</option>
-            {playlists.map((playlist) => (
+            {userPlaylists.map((playlist) => (
               <option key={playlist._id} value={playlist._id}>
                 {playlist.title}
               </option>
             ))}
           </select>
           <button
-            className="bg-[#AE869A] hover:bg-[#7F5EDA] text-white font-bold py-2 px-4 mt-2 w-full rounded"
+            className="off-white-button mt-2 w-full"
             onClick={handleAddSong}
             disabled={!selectedPlaylist}
           >
             Add to Selected Playlist
           </button>
         </div>
+      )}
+
+      {isDropdownOpen && userPlaylists.length === 0 && (
+        <p className="text-gray-500 italic mt-2">You have no playlists to add this song to.</p>
       )}
     </div>
   );
