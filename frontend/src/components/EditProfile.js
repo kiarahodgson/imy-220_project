@@ -19,7 +19,7 @@ const EditProfile = ({ user }) => (
       </label>
       <button
         type="submit"
-        className="bg-teal-500 text-white py-2 px-4 rounded hover:bg-teal-600"
+        className="off-white-button"
       >
         Submit Changes
       </button>

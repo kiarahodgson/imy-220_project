@@ -52,7 +52,7 @@ const LoginForm = ({ onLoginSuccess }) => {
         required
         className="w-full border border-gray-300 p-2 rounded-md"
       />
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+      <button type="submit" className="off-white-button">
         Login
       </button>
       {error && <p className="text-red-500">{error}</p>}

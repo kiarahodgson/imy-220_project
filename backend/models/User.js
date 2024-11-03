@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String },
     username: { type: String, required: true, unique: true },
     pronouns: { type: String },
+    isAdmin: { type: Boolean, default: false },
     bio: { type: String },
     socialLinks: [
         {

@@ -11,6 +11,7 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [friendRequestStatus, setFriendRequestStatus] = useState(''); // Track friend status
+  const [incomingRequests, setIncomingRequests] = useState([]); // Track incoming friend requests
   const navigate = useNavigate();
 
   const isViewingOwnProfile = profileData?._id === loggedInUserId;
@@ -25,52 +26,86 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
           ...data,
           profileImage: data.profileImage || defaultProfilePic,
           socialLinks: data.socialLinks || [],
-          friends: data.friends || []
+          friends: data.friends || [] // Ensure friends array is set
         });
+        console.log("Fetched profile data:", data); // Log profile data
       } catch (error) {
         console.error("Error fetching profile data:", error);
       }
     };
-
+    
+  
     const fetchFriendStatus = async () => {
       if (!isViewingOwnProfile) {
         try {
           const response = await fetch(`http://localhost:8000/api/users/${loggedInUserId}/is-friend/${userId}`);
           if (!response.ok) throw new Error('Failed to check friend status');
-          
+  
           const { isFriend, friendRequestPending } = await response.json();
-    
-          // Update the friend request status based on the backend response
+          console.log('Friend status fetched:', { isFriend, friendRequestPending }); // Log friend status
+  
           if (isFriend) {
             setFriendRequestStatus('friends');
           } else if (friendRequestPending) {
-            setFriendRequestStatus('requestSent'); // Status for when you already sent a request
+            setFriendRequestStatus('requestReceived');
           } else {
-            setFriendRequestStatus(''); // Status when no request is pending, and users are not friends
+            setFriendRequestStatus('');
           }
         } catch (error) {
           console.error("Error checking friend status:", error);
         }
       }
     };
-
+  
     const fetchUserPlaylists = async () => {
       try {
         const response = await fetch(`http://localhost:8000/api/playlists/user/${userId}`);
         if (!response.ok) throw new Error('Failed to fetch playlists');
         const playlists = await response.json();
         setUserPlaylists(playlists);
+        console.log("Fetched user playlists:", playlists); // Log playlists
       } catch (error) {
         console.error("Error fetching user playlists:", error);
       }
     };
-
+  
+    const fetchIncomingRequests = async () => {
+      if (isViewingOwnProfile) {
+        try {
+          console.log("Fetching incoming requests for:", loggedInUserId); // Log user ID
+          const response = await fetch(`http://localhost:8000/api/users/${loggedInUserId}`);
+          if (!response.ok) throw new Error('Failed to fetch incoming friend requests');
+    
+          const data = await response.json();
+          const friendRequests = data.friendRequests; // Array of user IDs
+    
+          // Fetch detailed profile for each friend request ID
+          const requests = await Promise.all(
+            friendRequests.map(async (requestId) => {
+              const requestResponse = await fetch(`http://localhost:8000/api/users/${requestId}`);
+              if (!requestResponse.ok) throw new Error('Failed to fetch request profile');
+              return requestResponse.json();
+            })
+          );
+    
+          console.log("Fetched incoming friend request profiles:", requests); // Log fetched profiles
+          setIncomingRequests(requests);
+        } catch (error) {
+          console.error("Error fetching incoming friend requests:", error);
+        }
+      }
+    };
+    
+  
     if (userId) {
       fetchProfileData();
       fetchUserPlaylists();
       fetchFriendStatus();
+      fetchIncomingRequests();
     }
   }, [userId, loggedInUserId]);
+
+  console.log("Render: incomingRequests", incomingRequests);
 
   const handleViewPlaylist = (playlistId) => {
     navigate(`/playlists/${playlistId}`);
@@ -136,30 +171,30 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
       console.error("Error sending friend request:", error);
     }
   };
-
-  const handleAcceptRequest = async () => {
+  
+  const handleAcceptRequest = async (senderId) => {
     try {
       const response = await fetch(`http://localhost:8000/api/users/${loggedInUserId}/accept-friend-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ senderId: userId })
+        body: JSON.stringify({ senderId })
       });
       if (!response.ok) throw new Error('Failed to accept friend request');
-      setFriendRequestStatus('friends');
+      setIncomingRequests((prev) => prev.filter(req => req._id !== senderId));
     } catch (error) {
       console.error("Error accepting friend request:", error);
     }
   };
 
-  const handleRejectRequest = async () => {
+  const handleRejectRequest = async (senderId) => {
     try {
       const response = await fetch(`http://localhost:8000/api/users/${loggedInUserId}/reject-friend-request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ senderId: userId })
+        body: JSON.stringify({ senderId })
       });
       if (!response.ok) throw new Error('Failed to reject friend request');
-      setFriendRequestStatus('');
+      setIncomingRequests((prev) => prev.filter(req => req._id !== senderId));
     } catch (error) {
       console.error("Error rejecting friend request:", error);
     }
@@ -184,6 +219,7 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
         <section className="profile-info">
           <p><strong>Friends:</strong> {profileData.friends.length} friends</p>
   
+          {/* Friend request and profile management logic */}
           {isViewingOwnProfile || friendRequestStatus === 'friends' ? (
             <>
               {isEditing ? (
@@ -235,10 +271,10 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
                 <p>Friends</p>
               ) : friendRequestStatus === 'requestReceived' ? (
                 <>
-                  <button onClick={handleAcceptRequest} className="off-white-button bg-green-500 text-white">
+                  <button onClick={() => handleAcceptRequest(userId)} className="off-white-button bg-green-500 text-white">
                     Accept Request
                   </button>
-                  <button onClick={handleRejectRequest} className="off-white-button bg-red-500 text-white ml-2">
+                  <button onClick={() => handleRejectRequest(userId)} className="off-white-button bg-red-500 text-white ml-2">
                     Reject Request
                   </button>
                 </>
@@ -254,13 +290,50 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
         </section>
       </div>
   
-      {/* Show friends list */}
-      {(isViewingOwnProfile || friendRequestStatus === 'friends') && profileData.friends.length > 0 && (
+      {/* Incoming Friend Requests */}
+      {isViewingOwnProfile && incomingRequests.length > 0 && (
+        <section className="incoming-requests">
+          <h3>Incoming Friend Requests</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {incomingRequests.map((request) => (
+              <div key={request._id} className="friend-request">
+                <ProfilePreview profile={{ 
+                  _id: request._id, 
+                  username: request.username, 
+                  profileImage: request.profileImage 
+                }} />
+                <button 
+                  onClick={() => handleAcceptRequest(request._id)} 
+                  className="off-white-button bg-green-500 text-white mt-2"
+                >
+                  Accept
+                </button>
+                <button 
+                  onClick={() => handleRejectRequest(request._id)} 
+                  className="off-white-button bg-red-500 text-white mt-2 ml-2"
+                >
+                  Reject
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+  
+      {/* Friends List */}
+      {profileData.friends.length > 0 && (
         <section className="friends-list">
-          <h3>{isViewingOwnProfile ? 'Your Friends' : `${profileData.username}'s Friends`}</h3>
+          <h3>Friends</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {profileData.friends.map((friend) => (
-              <ProfilePreview key={friend._id} profile={friend} />
+              <ProfilePreview 
+                key={friend._id} 
+                profile={{ 
+                  _id: friend._id, 
+                  username: friend.username, 
+                  profileImage: friend.profileImage 
+                }} 
+              />
             ))}
           </div>
         </section>
@@ -291,8 +364,7 @@ const ProfilePage = ({ userId, loggedInUserId, comments = [] }) => {
         </>
       )}
     </div>
-  );
-  
+  );  
 };
 
 export default ProfilePage;

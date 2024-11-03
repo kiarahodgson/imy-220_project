@@ -9,7 +9,7 @@ const EditPlaylist = () => (
     />
     <button
       type="submit"
-      className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600"
+      className="off-white-button"
     >
       Submit Changes
     </button>

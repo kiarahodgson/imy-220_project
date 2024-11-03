@@ -218,15 +218,16 @@ const HomePage = () => {
             {searchResults.songs.length > 0 && (
               <section className="mt-6 shadow-lg-purple rounded-lg p-6 bg-white">
                 <h3 className="text-xl font-semibold mb-4">Songs</h3>
-                <Feed
-                  songs={filteredSongs}
-                  playlists={[]}
-                  userPlaylists={userPlaylists}
-                  userId={user?.userId}
-                  onDeleteSong={onDeleteSong}
-                  activeTab="songs"
-                  loading={loading} // Pass loading state to Feed
-                />
+          <Feed
+          songs={filteredSongs}
+          playlists={[]}
+          userPlaylists={userPlaylists}
+          userId={user?._id}
+          onDeleteSong={onDeleteSong}
+          activeTab="songs"
+          loading={loading}
+          isAdmin={user?.isAdmin}
+        />
               </section>
             )}
 
@@ -275,6 +276,7 @@ const HomePage = () => {
                 userId={user?.userId}
                 onDeleteSong={onDeleteSong}
                 activeTab={activeTab}
+                showAddToPlaylistButton={true}
                 loading={loading} // Pass loading state to Feed
               />
             </section>

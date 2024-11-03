@@ -1,10 +1,12 @@
-// Song.js
 import React, { useState } from 'react';
 import AddToPlaylist from './AddToPlaylist';
 
-const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, showAddToPlaylistButton }) => {
+const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, showAddToPlaylistButton, isAdmin }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isDeleted, setIsDeleted] = useState(song.deleted);
+
+  const isOwner = song.addedBy && song.addedBy._id === userId;
+  console.log("isAdmin:", isAdmin, "isOwner:", isOwner); 
 
   const handleDeleteClick = () => {
     setShowConfirm(true);
@@ -12,9 +14,7 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
 
   const confirmDelete = async () => {
     try {
-      // Mark the song as deleted visually
       setIsDeleted(true);
-
       const response = await fetch(`http://localhost:8000/api/songs/${song._id}/delete`, {
         method: 'PUT',
         headers: {
@@ -26,7 +26,6 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
         throw new Error('Failed to mark song as deleted');
       }
 
-      // Call the onDelete function to remove the song from parent component
       onDelete(song._id);
     } catch (error) {
       console.error('Error deleting song:', error);
@@ -57,9 +56,8 @@ const Song = ({ song, playlists, userId, onDelete, onRemove, showRemoveButton, s
   return (
     <div className="song-wrapper">
       <div className={`song-container relative bg-white rounded-lg shadow-lg-purple p-4 ${isDeleted ? 'opacity-50' : ''}`}>
-        
-        {/* Delete Button in the Top-Right Corner */}
-        {!isDeleted && onDelete && (
+
+        {(isOwner || isAdmin) && !isDeleted && onDelete && (
           <button
             onClick={handleDeleteClick}
             className="absolute top-2 right-2 text-red-500 text-sm underline hover:text-red-700"

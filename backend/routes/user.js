@@ -233,17 +233,38 @@ router.post('/:userId/reject-friend-request', async (req, res) => {
 // Checks if users are friends
 router.get('/:userId/is-friend/:loggedInUserId', async (req, res) => {
     const { userId, loggedInUserId } = req.params;
-  
+
     try {
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-  
-      const isFriend = user.friends.includes(loggedInUserId);
-      const friendRequestPending = user.friendRequests.includes(loggedInUserId);
-      res.status(200).json({ isFriend, friendRequestPending });
+        const user = await User.findById(userId);
+        const loggedInUser = await User.findById(loggedInUserId);
+
+        if (!user || !loggedInUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if they are friends
+        const isFriend = user.friends.includes(loggedInUserId);
+
+        // Check for outgoing and incoming friend requests
+        const friendRequestPending = loggedInUser.sentRequests.includes(userId); // Outgoing request
+        const requestReceived = loggedInUser.friendRequests.includes(userId); // Incoming request
+
+        res.status(200).json({ isFriend, friendRequestPending, requestReceived });
     } catch (error) {
-      console.error('Error checking friendship status:', error);
-      res.status(500).json({ message: 'Error checking friendship status', error });
+        console.error('Error checking friendship status:', error);
+        res.status(500).json({ message: 'Error checking friendship status', error });
+    }
+});
+
+router.get('/:userId/incoming-requests', async (req, res) => {
+    const { userId } = req.params;
+    try {
+      const user = await User.findById(userId).populate('friendRequests', '_id username profileImage');
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      res.status(200).json(user.friendRequests);
+    } catch (error) {
+      console.error('Error fetching incoming friend requests:', error);
+      res.status(500).json({ message: 'Error fetching incoming friend requests', error });
     }
   });
   

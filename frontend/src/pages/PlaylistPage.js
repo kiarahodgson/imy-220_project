@@ -186,10 +186,10 @@ const PlaylistPage = ({ playlistId, user }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-            <button onClick={handleSaveChanges} className="bg-blue-500 text-white py-1 px-3 rounded">
+            <button onClick={handleSaveChanges} className="off-white-button">
               Save Changes
             </button>
-            <button onClick={handleEditToggle} className="bg-gray-500 text-white py-1 px-3 rounded ml-2">
+            <button onClick={handleEditToggle} className="off-white-button">
               Cancel
             </button>
           </div>
@@ -199,12 +199,13 @@ const PlaylistPage = ({ playlistId, user }) => {
             <p className="text-gray-700 mb-4">{playlist.description}</p>
             {isOwner && (
               <div className="action-buttons mt-2 space-x-4">
-                <button onClick={handleEditToggle} className="bg-green-500 text-white py-1 px-4 rounded">
-                  Edit
-                </button>
-                <button onClick={handleDeletePlaylist} className="bg-red-500 text-white py-1 px-4 rounded">
-                  Delete
-                </button>
+<button onClick={handleEditToggle} className="off-white-button">
+  Edit
+</button>
+<button onClick={handleDeletePlaylist} className="off-white-button">
+  Delete
+</button>
+
               </div>
             )}
           </>
@@ -245,7 +246,7 @@ const PlaylistPage = ({ playlistId, user }) => {
               placeholder="Add a comment..."
               className="w-full border border-gray-300 p-2 rounded-md"
             />
-            <button onClick={handleAddComment} className="bg-blue-500 text-white py-1 px-3 rounded mt-2">
+            <button onClick={handleAddComment} className="off-white-button">
               Post Comment
             </button>
           </div>

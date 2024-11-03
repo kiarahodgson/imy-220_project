@@ -2,7 +2,9 @@ import React from 'react';
 import PlaylistPreview from './PlaylistPreview';
 import Song from './Song';
 
-const Feed = ({ songs, playlists, userId, onDeleteSong, activeTab, userPlaylists, loading }) => {
+
+
+const Feed = ({ songs, playlists, userId, onDeleteSong, activeTab, userPlaylists, loading, showAddToPlaylistButton, isAdmin }) => {
   const renderSkeleton = (type) => (
     <div className="p-4 space-y-6 animate-pulse">
       {[...Array(3)].map((_, index) => (
@@ -22,7 +24,7 @@ const Feed = ({ songs, playlists, userId, onDeleteSong, activeTab, userPlaylists
         <div className="feed-songs">
           <h3 className="text-2xl font-bold mb-4">Songs</h3>
           {loading ? (
-            renderSkeleton('song') // Show song skeletons if loading
+            renderSkeleton('song')
           ) : songs.length > 0 ? (
             songs.map((song) => (
               <Song
@@ -31,7 +33,8 @@ const Feed = ({ songs, playlists, userId, onDeleteSong, activeTab, userPlaylists
                 playlists={userPlaylists}
                 userId={userId}
                 onDelete={onDeleteSong}
-                showAddToPlaylistButton={!song.deleted}
+                showAddToPlaylistButton={showAddToPlaylistButton && !song.deleted}
+                isAdmin={isAdmin}
               />
             ))
           ) : (

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Song from './Song';
 
-const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
+const Playlist = ({ playlist, userId, isAdmin, onAddSongToPlaylist }) => {
   const [playlistData, setPlaylistData] = useState(playlist);
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(playlistData.title);
@@ -10,7 +10,7 @@ const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
   const [newHashtag, setNewHashtag] = useState('');
   const navigate = useNavigate();
 
-  const isOwner = userId === playlistData.userId;
+  const isOwnerOrAdmin = isAdmin || userId === playlistData.userId;
 
   const handleAddHashtag = () => {
     if (newHashtag) {
@@ -76,10 +76,10 @@ const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
               className="text-gray-700 mb-4 w-full"
               placeholder="Description"
             />
-            <button onClick={handleSaveChanges} className="bg-blue-500 text-white py-1 px-3 rounded">
+            <button onClick={handleSaveChanges} className="off-white-button">
               Save Changes
             </button>
-            <button onClick={() => setIsEditing(false)} className="bg-gray-500 text-white py-1 px-3 rounded ml-2">
+            <button onClick={() => setIsEditing(false)} className="off-white-button ml-2">
               Cancel
             </button>
           </div>
@@ -89,12 +89,12 @@ const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
             <p>Genre: {playlistData.genre}</p>
             <img src={playlistData.coverImage} alt="Cover" className="cover-image my-4" />
             <p>{playlistData.description}</p>
-            {isOwner && (
+            {isOwnerOrAdmin && (
               <div className="flex space-x-2 mt-4">
-                <button onClick={() => setIsEditing(true)} className="bg-green-500 text-white py-1 px-3 rounded">
+                <button onClick={() => setIsEditing(true)} className="off-white-button">
                   Edit
                 </button>
-                <button onClick={handleDeletePlaylist} className="bg-red-500 text-white py-1 px-3 rounded">
+                <button onClick={handleDeletePlaylist} className="off-white-button">
                   Delete
                 </button>
               </div>
@@ -103,7 +103,7 @@ const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
         )}
       </header>
 
-      <div className="hashtags">
+      <div className="hashtags mt-4">
         {playlistData.hashtags.map((tag, index) => (
           <span key={index} className="hashtag text-blue-500 cursor-pointer">
             {tag}
@@ -116,7 +116,7 @@ const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
           placeholder="Add hashtag"
           className="border border-gray-300 p-1 rounded mt-2"
         />
-        <button onClick={handleAddHashtag} className="bg-blue-500 text-white py-1 px-2 rounded ml-2">
+        <button onClick={handleAddHashtag} className="off-white-button ml-2">
           Add Hashtag
         </button>
       </div>
@@ -127,7 +127,7 @@ const Playlist = ({ playlist, userId, onAddSongToPlaylist }) => {
             key={song._id}
             song={song}
             userId={userId}
-            showRemoveButton={isOwner}
+            showRemoveButton={isOwnerOrAdmin}
           />
         ))}
       </div>

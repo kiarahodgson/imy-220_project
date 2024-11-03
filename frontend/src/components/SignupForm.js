@@ -91,7 +91,7 @@ const SignupForm = () => {
         {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
       </div>
       {successMessage && <p className="text-green-500 text-xs mt-1">{successMessage}</p>}
-      <button className="bg-[#AE869A] text-white px-4 py-2 rounded hover:bg-[#6E70C1]" type="submit">
+      <button className="off-white-button" type="submit">
         Sign Up
       </button>
     </form>
