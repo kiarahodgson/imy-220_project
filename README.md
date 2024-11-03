@@ -32,7 +32,7 @@ This project is designed to showcase **user-centered design** and **full-stack d
    ```
    docker-compose up
    ```
-   3. **Access the Site**:
+3. **Access the Site**:
    - Visit `http://localhost:3000` to start using Sonica!
 
 4. **Test Account**:
