@@ -1,0 +1,335 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  /* font-family: Arial, sans-serif; */
+  background-color: #f3f8ff;
+}
+h1 {
+  font-family: 'lato', sans-serif;
+}
+
+/* Profile Page */
+.profile-page {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.profile-header {
+  color: black;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.profile-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #212121;
+}
+
+.profile-info-container {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(157, 79, 240, 0.181);
+  max-width: 36rem;
+  margin: 0 auto 2rem auto;
+}
+
+.profile-image-section img {
+  height: 8rem;
+  width: 8rem;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+}
+
+.profile-image-section input[type="file"] {
+  display: block;
+  margin: 0 auto;
+}
+
+.profile-info {
+  color: #555;
+  text-align: center;
+  
+}
+
+.profile-info p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.profile-info input,
+.profile-info textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.profile-info textarea {
+  height: 5rem;
+}
+
+.max-w-page {
+  max-width: 1200px;
+  margin: 0 auto; 
+}
+
+.form-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.form-container {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 8px 16px rgba(128, 90, 213, 0.2);
+}
+
+.off-white-button {
+  background-color: #effeff;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  box-shadow: 0 8px 15px rgba(128, 90, 213, 0.6);
+}
+
+.off-white-button:hover {
+  box-shadow: 0 6px 15px rgba(128, 90, 213, 0.5);
+  transform: translateY(-1px);
+}
+
+.off-white-button:active {
+  transform: translateY(1px);
+}
+
+.shadow-lg-purple {
+  box-shadow: 0 0 20px rgba(128, 90, 213, 0.6);
+}
+
+.song-container {
+  box-shadow: 0 0 15px rgba(128, 90, 213, 0.4);
+  transition: box-shadow 0.2s ease-in-out;
+  margin: 1rem 0;
+  background: #f7ebf9;
+}
+
+.song-wrapper {
+  padding-left: 15%;
+  padding-right: 15%;
+  margin-bottom: 1.5rem;
+}
+
+/* PlaylistPreview css */
+.playlist-preview {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #ffffff;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.playlist-preview:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.playlist-image {
+  width: 100%;
+  height: 10rem;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.playlist-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #4a4a4a;
+}
+
+.playlist-description {
+  color: #666;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.view-playlist-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+}
+
+
+/* Playlist area */
+.playlist-details {
+  padding-left: 15%;
+  padding-right: 15%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .playlist-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .playlist-details {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.playlist-details p {
+  text-align: center;
+  color: #777;
+  font-size: 1rem;
+}
+
+/* Comment area */
+.comments-section {
+  margin-top: 2rem;
+}
+
+.comments-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #4a4a4a;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.comments-section p {
+  text-align: center;
+  color: #777;
+}
+
+/* Dropdown css */
+.dropdown-container {
+  background-color: #fafafa;
+  border: 1px solid #dadada;
+  border-radius: 0.5rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+
+.dropdown-container select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.375rem;
+  transition: border-color 0.2s;
+}
+
+.dropdown-container select:focus {
+  border-color: #7f5eda;
+  outline: none;
+}
+
+.playlist-page {
+  max-width: 800px;
+  margin: auto;
+}
+
+.cover-image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.cover-image {
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.cover-image:hover {
+  transform: scale(1.02);
+}
+
+.edit-form input,
+.edit-form textarea {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.action-buttons button {
+  margin: 0 4px;
+}
+
+/* Profile Preview css */
+
+.profile-preview {
+  display: block;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 15px rgba(128, 90, 213, 0.6);
+}
+
+.profile-preview:hover {
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 15px rgba(128, 90, 213, 0.6);
+}
+
+.profile-preview-content {
+  display: flex;
+  align-items: center;
+}
+
+.profile-preview-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+}
+
+.profile-preview-info {
+  margin-left: 0.75rem;
+}
+
+.profile-preview-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.splash-header {
+  text-align: center;
+  padding: 30px;
+  background: linear-gradient(to right, #E3EEFF, #A6BDFF);
+  color: rgb(0, 0, 0);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 15px rgba(128, 90, 213, 0.6);
+}
+.splash-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+.splash-header p {
+  margin-top: 0.5rem;
+  font-size: 1.125rem;
+}
